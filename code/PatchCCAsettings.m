@@ -1,6 +1,6 @@
 function sett = PatchCCAsettings(settings)
 % Default settings
-def_sett = struct('K',25,'nit',5,'b0',1,'nu0',1500,'v0',1,'d1',5,'nit0',10,'matname','','workers',0);
+def_sett = struct('K',25,'nit',5,'b0',1,'nu0',1500,'v0',1,'d1',5,'nit0',10,'do_orth',false,'matname','','workers',0);
 if nargin < 1 || isempty(settings)
     sett = def_sett;
 else
