@@ -3,6 +3,7 @@ function z = NetApply(F,mu,W,W0,W1,W2,z2,z)
 Nvox  = size(W,1);
 M     = size(W,2);
 K     = size(W,3);
+if K==0, return; end
 
 % Gauss-Newton optimisation expressed as a type of Res-Net
 msk    = ~isfinite(F);
@@ -21,4 +22,5 @@ function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
 E   = exp(Psi-mx);
 P   = E./(sum(E,d)+exp(-mx));
+
 

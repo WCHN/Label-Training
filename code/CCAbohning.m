@@ -16,14 +16,12 @@ function [mod,Z,V] = CCAbohning(F,ind,sett,varargin)
 % Figure out the various desired settings.
 N     = size(ind,1);
 
-def_sett = struct('K',16,'nit',5,'b0',1,'nu0',16*7,'v0',16,'do_orth',true);
-if nargin<3, sett = def_sett; end
-fn = fieldnames(def_sett);
-for i=1:numel(fn)
-    if ~isfield(sett,fn{i})
-        sett.(fn{i}) = def_sett.(fn{i});
-    end
+if nargin>=3
+    sett = PatchCCAsettings(sett);
+else
+    sett = PatchCCAsettings;
 end
+
 K     = sett.K;
 B0    = eye(K)*sett.b0;
 
@@ -116,15 +114,21 @@ end
 
 %% UpdateW
 % Update the mean ($\bf\mu$) and basis functions ($\bf W$).
+%
+% See Murphy's textbook.
+%%
+% * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
+%   Institute of Technology. 2012:1-21.
 function [mu,W] = UpdateW(F,Z,V,mu,W,B)
 Nvox  = size(F,1);
 M     = size(F,2);
 N     = size(F,3);
 K     = size(W,3);
 
-% Update basis functions (W) and mean (mu) using Gauss-Newton
 A = Abohning(M);
 
+%%
+% Update $\boldsymbol\mu$.
 Vm = inv(N*A);                           % Cov mu
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
@@ -134,8 +138,9 @@ for i=1:Nvox
     R(msk)   = 0;
     mu(i,:)  = (Vm*sum(R,2))';           % Update of mu
 end
-%% 
 
+%% 
+% Update ${\bf W}$.
 Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
@@ -150,8 +155,7 @@ end
 
 %% HessZ
 % Compute Bohning's lower bound approximation to the Hessian used for updating
-% ${\bf z}$.
-%%
+% the approximation to ${\bf z}$.
 function H = HessZ(W)
 Nvox = size(W,1);
 M    = size(W,2);
@@ -164,7 +168,7 @@ for i=1:Nvox
 end
 
 %% ComputeWW
-% Compute ${\bf W}^T{\bf W}$, accounting for image dimensions etc
+% Compute ${\bf W}^T{\bf W}$, accounting for image dimensions etc (unused).
 %%
 function WW = ComputeWW(W)
 Nvox = size(W,1);
@@ -180,32 +184,32 @@ WW   = W'*W;
 %%
 % * Böhning D. _Multinomial logistic regression algorithm_ . Annals of the
 %   institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
-% * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
-%   Institute of Technology. 2012:1-21.
-%
-%%
 function A = Abohning(M)
 A  = 0.5*(eye(M)-1/(M+1));
 
 %% NumeratorZ
-% See Murphy's textbook.
+% See Algorithm 21.1 of Murphy's textbook.
 %%
+% * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
+%   Institute of Technology. 2012:1-21.
 function g = NumeratorZ(Fn,z,mu,W)
 Nvox = size(Fn,1);
 M    = size(Fn,2);
 K    = size(W,3);
 A    = Abohning(M);
-Psi0 = reshape(reshape(W,[Nvox*M,K])*z,[Nvox,M]);
+Psi0 = reshape(  reshape(W,[Nvox*M,K])*z,[Nvox,M]);
 P    = SoftMax(Psi0+mu,2);
-R    = reshape(Fn+Psi0*A-P,[1,Nvox*M]);
-g    = reshape(R*reshape(W,[Nvox*M,K]),[K,1]);
+r    = reshape(Fn-P+Psi0*A,[1,Nvox*M]);
+g    = reshape(r*reshape(W,[Nvox*M,K]),[K,1]);
 
 %% SoftMax
-% Safe softmax that prevents over/underflow.
+% Safe softmax over dimension $d$, which prevents over/underflow.
 % 
 % $$p_k = \frac{\exp \psi_k}{\sum_{c=1}^K \exp \psi_c}$$
-% 
-%%
+%
+% With the constraint \psi_K=0
+%
+% $$p_k = \frac{\exp \psi_k}{1+\sum_{c=1}^{K-1} \exp \psi_c}$$
 function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
 E   = exp(Psi-mx);
