@@ -63,6 +63,6 @@ if p1>=1 && p1<=size(Z,1) && ...
    ~isempty(Z{p1,p2,p3})
     z = Z{p1,p2,p3};
 else
-    z = [];
+    z = zeros(0,1);
 end
 

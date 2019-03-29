@@ -22,9 +22,6 @@ else
     sett = PatchCCAsettings;
 end
 
-K     = sett.K;
-B0    = eye(K)*sett.b0;
-
 if nargin<=3
     if isa(F,'cell')
         c = cell(1,numel(F));
@@ -41,12 +38,15 @@ if nargin<=3
         mod(l).W  = zeros(size(F{l},1), size(F{l},2), K,'single');
     end
     randn('seed',0);
+    K     = sett.K;
+    B0    = eye(K)*sett.b0;
     Z     = randn(K,N,'single');
     Z     = Z - mean(Z,2);
 else
     mod   = varargin{1};
     Z     = varargin{2};
     K     = size(mod(1).W,3);
+    B0    = eye(K)*sett.b0;
 end
 
 if nargin<6

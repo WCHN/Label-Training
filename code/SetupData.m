@@ -21,7 +21,7 @@ for n=1:size(files,1)
     file_glm = fullfile(pth,['w' nam(4:end) '_glm' ext]);
     if exist(file_glm,'file')
         data.dat(n).view(2).image = file_glm;
-        data.dat(n).jitter        = [1 1 1];
+        data.dat(n).jitter        = [2 2 2];
     end
 end
 
@@ -30,12 +30,16 @@ end
 %data = spm_jsonread('/tmp/data.jsn');
 
 sett  = PatchCCAsettings;         % Default settings
-sett.matname = 'model.mat';       % File to save trained model into
+sett.matname = '/home/john/WIP/SGA2/model2.mat'; % File to save trained model into
 sett.d1      = 4;                 % Patch size
-sett.workers = 10;                % Parallelise training
-sett.K       = 16;                % Number of components
+sett.workers = 8;                 % Parallelise training
+sett.K       = 25;                % Number of components
 sett.nu0     = 1500;              % Regularisation (part of Wishart prior)
+sett.nit0    = 2;                 % Number of outer iterations
+model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
+model = PatchCCAprune(model);
 sett.nit0    = 8;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
 model = Patch2NN(model);          % Convert model to NN form
+save('/home/john/WIP/SGA2/model2NN.mat','model','sett','-v7.3');
 

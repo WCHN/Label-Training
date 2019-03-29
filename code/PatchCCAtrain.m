@@ -1,24 +1,24 @@
-function model=PatchCCAtrain(data,settings,model)
+function model=PatchCCAtrain(data,sett,model)
 % Fit the patch-wise CCA-like model.
-% FORMAT model=PatchCCAtrain(data,settings,model)
-% data     - a data structure encoding the images used, as well as the
-%            amount of jitter etc.
-% settings - a data structure encoding settings.  Fields used are:
-%            K       - Number of components to use in the model             [25]
-%            nit     - Number of inner iterations for updating mu, W & Z    [5]
-%            b0      - Regularisation on W                                  [1.0]
-%            nu0     - Wishart degrees of freedom: A ~ W(I v_0 \nu_0, nu_0) [25*7]
-%            v0      - Wishart scale parameter:    A ~ W(I v_0 \nu_0, nu_0) [1.0]
-%            d1      - Patch-size (currently same in all directions)        [5]
-%            nit0    - Outer iterations                                     [20]
-%            matname - filename for saving model                            ['']
-%            workers - Number of workers in parfor                          [0]
-% model    - the estimated model
+% FORMAT model=PatchCCAtrain(data,sett,model)
+% data  - a data structure encoding the images used, as well as the
+%         amount of jitter etc.
+% sett  - a data structure encoding settings.  Fields used are:
+%         K       - Number of components to use in the model             [25]
+%         nit     - Number of inner iterations for updating mu, W & Z    [5]
+%         b0      - Regularisation on W                                  [1.0]
+%         nu0     - Wishart degrees of freedom: A ~ W(I v_0 \nu_0, nu_0) [25*7]
+%         v0      - Wishart scale parameter:    A ~ W(I v_0 \nu_0, nu_0) [1.0]
+%         d1      - Patch-size (currently same in all directions)        [5]
+%         nit0    - Outer iterations                                     [20]
+%         matname - filename for saving model                            ['']
+%         workers - Number of workers in parfor                          [0]
+% model - the estimated model
 %
 
 % Default settings
 if nargin>=2
-    sett = PatchCCAsettings(settings);
+    sett = PatchCCAsettings(sett);
 else
     sett = PatchCCAsettings;
 end

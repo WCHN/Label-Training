@@ -12,6 +12,8 @@ function model = Patch2NN(model,ind,sett)
 if nargin<2, ind = 1; end
 if ~isfield(model,'Z'), error('Model is already converted to NN form.'); end
 
+model = PatchCCAprune(model);
+
 if nargin<3
     sett = PatchCCAsettings;
 else
@@ -24,17 +26,7 @@ model(1).W2 = [];
 model(1).Va = [];
 model(1).ind = ind;
 
-fprintf('Pruning:    ');
-for p3=1:size(model,3)
-    for p2=1:size(model,2)
-        for p1=1:size(model,1)
-            model(p1,p2,p3) = Orthogonalise(model(p1,p2,p3));
-        end
-    end
-    fprintf('.');
-end
-fprintf('\nConverting: ');
-
+fprintf('Converting: ');
 for p3=1:size(model,3)
     for p2=1:size(model,2)
         for p1=1:size(model,1)
@@ -68,35 +60,9 @@ for p3=1:size(model,3)
     end
     fprintf('.');
 end
-%model = rmfield(model,'Z');
-%model = rmfield(model,'V');
+model = rmfield(model,'Z');
+model = rmfield(model,'V');
 fprintf('\n');
-
-
-function patch = Orthogonalise(patch)
-Z       = patch.Z;
-V       = patch.V;
-mod     = patch.mod;
-EZZ     = Z*Z'+V;   % Expectation of Z'*Z
-[~,~,R] = svd(EZZ); % Rotation to diagonalise EZZ 
-Z       = R'*Z;     % Rotate the matrices.
-V       = R'*V*R;
-for l=1:numel(mod)
-    Nvox     = size(mod(l).W,1);
-    M        = size(mod(l).W,2);
-    K        = size(mod(l).W,3);
-    mod(l).W = reshape(reshape(mod(l).W,[Nvox*M,K])*R,[Nvox,M,K]);
-end
-nz  = sum(Z.^2,2)/size(Z,2);
-ind = nz>sqrt(1/100000);
-Z   = Z(ind,:);
-V   = V(ind,ind);
-for l=1:numel(mod)
-    mod(l).W = mod(l).W(:,:,ind);
-end
-patch.mod = mod;
-patch.Z   = Z;
-patch.V   = V;
 
 
 function Z = GetZ(p1,p2,p3,model)
@@ -108,6 +74,7 @@ if p1>=1 && p1<=size(model,1) && ...
 else
     Z = [];
 end
+
 
 function V = GetV(p1,p2,p3,model)
 if p1>=1 && p1<=size(model,1) && ...
