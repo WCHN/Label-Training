@@ -39,7 +39,7 @@ sett.nit0    = 2;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
 model = PatchCCAprune(model);
 sett.nit0    = 8;                 % Number of outer iterations
-model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
+model = PatchCCAtrain(data,sett,model); % Run the fitting (takes hours)
 model = Patch2NN(model);          % Convert model to NN form
 save('/home/john/WIP/SGA2/model2NN.mat','model','sett','-v7.3');
 
