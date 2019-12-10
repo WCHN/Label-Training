@@ -2,6 +2,7 @@
 
 ## Overview
 In addition to the vesion https://github.com/WCHN/Label-Training, this new version including some new features:
+
 **weighting**
 The displacement of certain amount of voxel for one voxel along each direction is controlled by is a data augmentation method we used in this work. We weight the contribution of each row of the data according to the amount of jitter. If jitter is zero in each direction, then it will be weighted more heavily than if it is displaced by 1 voxel along all three dimensions. This weighting is based on Gaussian probability with different values of standard deviation. 
 
