@@ -15,7 +15,9 @@ for i=1:15
 F=cat(4,F1(i).dat,F2(i).dat);  
 [Y,~]=PatchCCAapply(model,F,sett); % Y is label map and P is prob
 label_tr{i}=Y;
-end
+end 
+
+
 
 files3= spm_select('FPList',datadir,'^w.*glm\.nii$');
 Nii=nifti(files3);

@@ -212,7 +212,7 @@ ptCloud= pointCloud(coor);
 
 dist = squeeze(repmat(dist,[1 1 size(data.dat,1)]));
 
-sigma = 1.5;  % change this parameter (in mm)
+sigma = 1;  % change std (in mm)
 
 for i=1:size(coor,1)
 
@@ -224,7 +224,7 @@ end
 
 Ws=Ws(:)'/sum(Ws(:)); 
 
-
+% Ws=ones(1,27*15); % base on patch size and jitter
 
 
 function x = Bound(x,d)

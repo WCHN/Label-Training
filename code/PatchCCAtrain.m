@@ -32,8 +32,9 @@ ind  = data.ind;
 if nargin<3 % changed from < 3 to <= 3
     % Set up the offsets defining the patches
     d1      = sett.d1; % patch size 
-    offsets = {1:d1:dm(1), 1:d1:dm(2),50}; % Single slice 
-%     offsets = {1:d1:dm(1), 1:d1:dm(2), 1:d1:dm(3)};
+%     offsets = {1:d1:dm(1), 1:d1:dm(2),50}; % Single slice 
+%     offsets = {1:d1:dm(1), 1:d1:dm(2), 1:d1:dm(3)}; % 3D
+    offsets = {1:d1:dm(1), 1:d1:dm(2), 61}; % 3D
 
     % Set up a data structure to hold the results
     c       = cell(cellfun(@numel,offsets)); % number of elements in each offset
@@ -83,8 +84,8 @@ for it=1:(2*sett.nit0)% outer loop is 2 then 8
            
             
 %%   Run the parfor on the collections of stuff
-%              parfor(p1=1:numel(patches), sett.workers)
-           for p1=1:numel(patches)
+            parfor(p1=1:numel(patches), sett.workers)
+%            for p1=1:numel(patches)
                 if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2) 
                     patch = patches{p1}; % give it to patch
                     F     = Fs{p1};                

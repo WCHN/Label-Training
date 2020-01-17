@@ -59,7 +59,7 @@ for it=1:(2*sett.nit0) % Black & White chessboard updates
 %                                GetZ(p1  ,p2-1,p3  , Z)
 %                                GetZ(p1+1,p2  ,p3  , Z)
 %                                GetZ(p1-1,p2  ,p3  , Z)]; % Neighbouring latent variables (of other colour)
-                        % Estimate latent variables, conditional on neighbouring latent variables
+                       
                         Z{p1,p2,p3} = NetApply(Fp,patch.mod(ind).mu,patch.mod(ind).W,patch.W0,patch.W1,patch.W2,z2,Z{p1,p2,p3});
                     end
                 end
