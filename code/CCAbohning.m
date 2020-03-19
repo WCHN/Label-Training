@@ -1,8 +1,8 @@
-function [mod,Z,V] = CCAbohning(F,ind,sett,varargin)
+function [mod,Z,V] = CCAbohning(F,ind,sett,Ws,varargin)
 %% Bohning bound CCA stuff
 %% [Z,V,mod] = CCAbohning(F,ind,sett)
 %%
-
+ 
 % F  - Nvox x M x N
 % Z  - K x N
 % V  - K x K
@@ -15,65 +15,73 @@ function [mod,Z,V] = CCAbohning(F,ind,sett,varargin)
 %%
 % Figure out the various desired settings.
 N     = size(ind,1);
-
-if nargin>=3
+% Ws   =varargin{1};
+% varargin=cell(0);
+ 
+if nargin>=4
     sett = PatchCCAsettings(sett);
 else
     sett = PatchCCAsettings;
 end
-
-if nargin<=3
+ 
+if nargin<=4
     if isa(F,'cell')
         c = cell(1,numel(F));
     else
         c = cell(1);
         F = {F};
     end
-    mod   = struct('mu',c,'W',c);
+    mod   = struct('mu',c,'W',c); % define mod
+    K     = sett.K;   % define K 
+
+
     for l=1:numel(mod)
         if sum(ind(:,l),1)~=size(F{l},3)
             error('Incompatible dimensions (%d ~= %d).', sum(ind(:,l),1), size(F{l},3));
         end
-        mod(l).mu = zeros(size(F{l},1), size(F{l},2),'single');
+        mod(l).mu = zeros(size(F{l},1), size(F{l},2),'single');  
         mod(l).W  = zeros(size(F{l},1), size(F{l},2), K,'single');
     end
+    
     randn('seed',0);
-    K     = sett.K;
-    B0    = eye(K)*sett.b0;
+    
+    B0    = eye(K)*sett.b0; %b0=1
     Z     = randn(K,N,'single');
     Z     = Z - mean(Z,2);
 else
-    mod   = varargin{1};
+
+    mod = varargin{1};
     Z     = varargin{2};
     K     = size(mod(1).W,3);
-    B0    = eye(K)*sett.b0;
+    B0    = eye(K)*sett.b0; % b0=1
 end
-
+ 
 if nargin<6
     V     = eye(K);
 else
     V     = varargin{3};
 end
+ 
 if nargin<7
     Z0 = zeros(K,N);
 else
     Z0 = varargin{4};
 end
 if nargin<8
-    P0 = eye(K)/sett.v0;
+    P0 = eye(K)/sett.v0; %v0=1
 else
     P0 = varargin{5};
 end
-
+ 
 %%
 % Run the iterative variational Bayesian EM algorithm itself.
 for iter=1:sett.nit
-
+ 
     % Variational M-step
     for l=1:numel(mod)
-        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), V, mod(l).mu, mod(l).W, B0);
+        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), V, mod(l).mu, mod(l).W, B0,Ws);
     end
-
+ 
     % Variational E-step
     Hc  = cell(1,numel(mod));
     for l=1:numel(Hc)
@@ -92,10 +100,14 @@ for iter=1:sett.nit
             end
         end
         Z(:,n) = H\g;
+        
+        
         V      = V + inv(H);
+        
+        
     end
     Z  = Z-mean(Z,2); % Mean-centre
-
+ 
     % Orthogonalise (if required) for purely cosmetic reasons.
     if sett.do_orth
         EZZ      = Z*Z'+V;  % Expectation of Z'*Z
@@ -111,7 +123,7 @@ for iter=1:sett.nit
         end
     end
 end
-
+ 
 %% UpdateW
 % Update the mean ($\bf\mu$) and basis functions ($\bf W$).
 %
@@ -119,29 +131,42 @@ end
 %%
 % * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
 %   Institute of Technology. 2012:1-21.
-function [mu,W] = UpdateW(F,Z,V,mu,W,B)
-Nvox  = size(F,1);
-M     = size(F,2);
-N     = size(F,3);
-K     = size(W,3);
+
+function [mu,W] = UpdateW(F,Z,V,mu,W,B,Ws)
+Nvox  = size(F,1); %
+M     = size(F,2); %2
+N     = size(F,3); %820
+K     = size(W,3); %25
 
 A = Abohning(M);
-
+ 
 %%
 % Update $\boldsymbol\mu$.
-Vm = inv(N*A);                           % Cov mu
+ 
+% weighted sum
+ 
+ 
+Vm = inv(sum(Ws)*A);                           %------------
+
+
+ 
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
     msk      = ~isfinite(Fi);
-    Psi      = reshape(W(i,:,:),[M,K])*Z + mu(i,:)';
+    Psi      = reshape(W(i,:,:),[M,K])*Z + mu(i,:)'; %variational parameter vector
     R        = Fi + A*mu(i,:)' - SoftMax(Psi,1);
     R(msk)   = 0;
-    mu(i,:)  = (Vm*sum(R,2))';           % Update of mu
+    
+    
+    mu(i,:)  = (Vm*sum(R,2))';          % --------  Update of mu
+    
+    
 end
-
+ 
 %% 
 % Update ${\bf W}$.
-Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
+ 
+ 
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
     msk      = ~isfinite(Fi);
@@ -149,10 +174,17 @@ for i=1:Nvox
     Psi      = Psi0+mu(i,:)';
     R        = Fi + A*Psi0 - SoftMax(Psi,1);
     R(msk)   = 0;
+    
+    
+    
     g        = reshape(R*Z',[M*K,1]); 
+    Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
+    
+    
+    
     W(i,:,:) = reshape((Vw*g)',[1 M K]); % Update of W
 end
-
+ 
 %% HessZ
 % Compute Bohning's lower bound approximation to the Hessian used for updating
 % the approximation to ${\bf z}$.
@@ -166,7 +198,7 @@ for i=1:Nvox
     Wi = reshape(W(i,:,:),[M,K]);
     H  = H + Wi'*A*Wi;
 end
-
+ 
 %% ComputeWW
 % Compute ${\bf W}^T{\bf W}$, accounting for image dimensions etc (unused).
 %%
@@ -176,17 +208,17 @@ M    = size(W,2);
 K    = size(W,3);
 W    = reshape(W,[Nvox*M, K]);
 WW   = W'*W;
-
+ 
 %% Abohning
 % "Bohning bound": Hessian matrix replaced by a global lower bound in the Loewner ordering.
 %
 % ${\bf A} = \frac{1}{2}({\bf I}_M - \frac{1}{M+1})$
 %%
-% * Böhning D. _Multinomial logistic regression algorithm_ . Annals of the
+% * B�hning D. _Multinomial logistic regression algorithm_ . Annals of the
 %   institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 function A = Abohning(M)
 A  = 0.5*(eye(M)-1/(M+1));
-
+ 
 %% NumeratorZ
 % See Algorithm 21.1 of Murphy's textbook.
 %%
@@ -201,7 +233,7 @@ Psi0 = reshape(  reshape(W,[Nvox*M,K])*z,[Nvox,M]);
 P    = SoftMax(Psi0+mu,2);
 r    = reshape(Fn-P+Psi0*A,[1,Nvox*M]);
 g    = reshape(r*reshape(W,[Nvox*M,K]),[K,1]);
-
+ 
 %% SoftMax
 % Safe softmax over dimension $d$, which prevents over/underflow.
 % 
@@ -214,6 +246,6 @@ function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
 E   = exp(Psi-mx);
 P   = E./(sum(E,d)+exp(-mx));
-
+ 
 %%
 %%

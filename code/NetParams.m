@@ -25,7 +25,7 @@ P11 = P(1:K,    1:K  );                      % z~N(inv(P11)*(-P12*z2), inv(P11))
 P12 = P(1:K, K+(1:K2));
 
 % "Bohning bound": Hessian matrix replaced by a global lower bound in the Loewner ordering.
-% * Böhning D. Multinomial logistic regression algorithm. Annals of the
+% * B�hning D. Multinomial logistic regression algorithm. Annals of the
 %   institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 % * Murphy K. Machine learning: a probabilistic approach. Massachusetts
 %   Institute of Technology. 2012:1-21.
@@ -42,7 +42,6 @@ end
 % These are the weights required. See NetApply.m for how the weights
 % are applied.
 W0     = -H\P12;
-W1     =  H\reshape(W,[Nvox*M,K])';
+W1     =  H\reshape(W,[Nvox*M,K])'; % line 11 in netapply does not work, dimension does not match
 W2     =  W1*kron(A,eye(Nvox))*reshape(W,[Nvox*M,K]);
 V      = inv(H);
-

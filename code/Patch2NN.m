@@ -30,7 +30,7 @@ fprintf('Converting: ');
 for p3=1:size(model,3)
     for p2=1:size(model,2)
         for p1=1:size(model,1)
-            patch   = model(p1,p2,p3);
+            patch   = model(p1,p2,p3);  % save to patch
             Z2  = [GetZ(p1  ,p2  ,p3+1,model)
                    GetZ(p1  ,p2  ,p3-1,model)
                    GetZ(p1  ,p2+1,p3  ,model)
@@ -44,6 +44,16 @@ for p3=1:size(model,3)
                           GetV(p1  ,p2-1,p3  ,model),...
                           GetV(p1+1,p2  ,p3  ,model),...
                           GetV(p1-1,p2  ,p3  ,model));
+%             Z2  = [GetZ(p1  ,p2+1,p3  ,model)
+%                    GetZ(p1  ,p2-1,p3  ,model)
+%                    GetZ(p1+1,p2  ,p3  ,model)
+%                    GetZ(p1-1,p2  ,p3  ,model)];
+%                
+%             V2  = blkdiag(GetV(p1  ,p2+1,p3  ,model),...
+%                           GetV(p1  ,p2-1,p3  ,model),...
+%                           GetV(p1+1,p2  ,p3  ,model),...
+%                           GetV(p1-1,p2  ,p3  ,model));
+
 
             % Current patch
             Z   = patch.Z;
@@ -55,7 +65,7 @@ for p3=1:size(model,3)
                 [patch.W0,patch.W1,patch.W2,patch.Va] = NetParams(patch.mod(ind).W,Z,Z2,V,V2,sett.nu0,sett.v0);
                 patch.ind = ind;
             end
-            model(p1,p2,p3) = patch;
+            model(p1,p2,p3) = patch;   % save back to model
         end
     end
     fprintf('.');
@@ -86,3 +96,4 @@ else
     V = [];
 end
 
+    

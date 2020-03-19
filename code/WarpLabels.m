@@ -20,4 +20,3 @@ for j=0:255
     end
 end
 fprintf('\n');
-

@@ -1,6 +1,6 @@
 function [Y,P]=PatchCCArecon(model,Z,ind)
-% Reconstruct data
-% FORMAT [Y,P]=PatchCCArecon(model,Z,ind)
+% Reconstruct data 
+% FORMAT [Y,P]=PatchCCArecon(model,Z,ind) Y label iamge and P is prob
 % model - The learned model
 % Z     - Cell array of latent variables
 % ind   - Index of the data-type to reconstruct
@@ -16,6 +16,13 @@ end
 
 for p=1:numel(model)      % Loop over patches
     patch = model(p);     % Model for current patch
+    model(p).pos=[];
+    model(p).c=[];
+    model(p).mod=[];
+    model(p).W0=[];
+    model(p).W1=[];
+    model(p).W2=[];
+    model(p).Va=[];
     if isempty(patch.mod) % No model fitted because labels were all identical
        if ~isempty(patch.c{ind})
            Y(patch.pos{:}) = patch.c{ind}(1); % Assign constant label
@@ -37,8 +44,8 @@ end
 
 
 function P = GetP(z,V,mod,dm)
-P   = GetPml(z,mod,dm); return
-K   = size(mod.W,3);
+P   = GetPml(z,mod,dm); return    
+K   = size(mod.W,3); 
 M   = size(mod.W,2);
 Ns  = 1000;
 z   = z + sqrtm(V)*randn(size(z,1),Ns); % Note that V needs rescaling
@@ -60,4 +67,3 @@ psi   = cat(d,psi,zeros(dm));
 mx    = max(psi,[],d);
 E     = exp(psi-mx);
 P     = E./sum(E,d);
-

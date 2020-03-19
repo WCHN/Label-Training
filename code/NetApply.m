@@ -8,7 +8,7 @@ if K==0, return; end
 % Gauss-Newton optimisation expressed as a type of Res-Net
 msk    = ~isfinite(F);
 F(msk) = 0;
-t      = W1*F(:) + W0*z2; % First fully-connected layer
+t      = W1*F(:) + W0*z2; % First fully-connected layer, F should be wc1 and wc2 at a time (size 27*2)
 for layer=1:5
     oz     = z;
     Psi    = reshape(reshape(W,[Nvox*M,K])*z,[Nvox M])+mu; % Psi = W*z+mu fully-connected layer
@@ -22,5 +22,3 @@ function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
 E   = exp(Psi-mx);
 P   = E./(sum(E,d)+exp(-mx));
-
-
