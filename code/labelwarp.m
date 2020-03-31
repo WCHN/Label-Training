@@ -1,10 +1,6 @@
 
 % warp label before training
 
-% Ptheta = spm_select(Inf,'^y_.*\.nii'); %warp
-% % Plab   = spm_select(size(Ptheta,1),'.*\.img'); %label
-% Plab   = spm_select(size(Ptheta,1),'^w.*glm\.nii$'); %label
-
 datadir = 'D:\Documents\Yu\Fusion-Challenge\training-images';
 Ptheta  = spm_select('FPList',datadir,'^y.*\.nii$');
 datadir1 = 'D:\Documents\Yu\Fusion-Challenge\training-labels';
