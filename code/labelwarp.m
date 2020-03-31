@@ -22,7 +22,6 @@ for i=1:numel(Ntheta)
     [pth,nam,ext] = fileparts(Nlab(i).dat.fname);
     Nii   = Nlab(i);
     Nii.dat.fname = fullfile('D:\Documents\Yu\Fusion-Challenge\training-images',['w' nam ext]);
-%     Nii.dat.fname = fullfile('D:\Documents\Yu\40 LPBA\image',['w' nam ext]);
     Nii.dat.dim   = Ntheta(i).dat.dim(1:3);
     Nii.dat.dtype = 'UINT8';
     Nii.dat.scl_slope = 1;
