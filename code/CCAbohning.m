@@ -39,14 +39,14 @@ if nargin<=3
     end
     randn('seed',0);
     K     = sett.K;
-    B0    = eye(K)*sett.b0;
+    B0    = (eye(K) - 1/(K+1))*sett.b0;
     Z     = randn(K,N,'single');
     Z     = Z - mean(Z,2);
 else
     mod   = varargin{1};
     Z     = varargin{2};
     K     = size(mod(1).W,3);
-    B0    = eye(K)*sett.b0;
+    B0    = (eye(K) - 1/(K+1))*sett.b0;
 end
 
 if nargin<6
