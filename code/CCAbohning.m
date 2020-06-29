@@ -145,7 +145,7 @@ end
 %% 
 % Update ${\bf W}$.
 %Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
-Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)));
+Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)-1/(M+1)));
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
     msk      = ~isfinite(Fi);
