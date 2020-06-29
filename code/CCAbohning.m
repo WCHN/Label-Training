@@ -30,6 +30,7 @@ if nargin<=3
         F = {F};
     end
     mod   = struct('mu',c,'W',c);
+    K     = sett.K;
     for l=1:numel(mod)
         if sum(ind(:,l),1)~=size(F{l},3)
             error('Incompatible dimensions (%d ~= %d).', sum(ind(:,l),1), size(F{l},3));
@@ -38,7 +39,6 @@ if nargin<=3
         mod(l).W  = zeros(size(F{l},1), size(F{l},2), K,'single');
     end
     randn('seed',0);
-    K     = sett.K;
     B0    = eye(K)*sett.b0;
     Z     = randn(K,N,'single');
     Z     = Z - mean(Z,2);
