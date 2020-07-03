@@ -1,8 +1,8 @@
-datadir  = '/home/john/WIP/SGA2/data'; % Edit accordingly
+datadir  = 'C:\Users\Hester\Desktop\John\Yu\SGA2\data\train'; % Edit accordingly
 files    = spm_select('FPList',datadir,'^wc1.*\.nii$');
 v        = struct('view', {'',''});
 dat      = struct('view',  struct('image',{'',''}),...
-                  'jitter',[0 0 0]);
+                  'jitter',[0 0 0],'sd',0);
 
 clear data
 data.code = [1 2];
@@ -21,7 +21,8 @@ for n=1:size(files,1)
     file_glm = fullfile(pth,['w' nam(4:end) '_glm' ext]);
     if exist(file_glm,'file')
         data.dat(n).view(2).image = file_glm;
-        data.dat(n).jitter        = [2 2 2];
+        data.dat(n).jitter        = [1 1 1];
+        data.dat(n).sd            = 0.75;
     end
 end
 
@@ -30,15 +31,15 @@ end
 %data = spm_jsonread('/tmp/data.jsn');
 
 sett  = PatchCCAsettings;         % Default settings
-sett.matname = '/home/john/WIP/SGA2/model2.mat'; % File to save trained model into
+sett.matname = 'C:\Users\Hester\Desktop\John\Yu\SGA2\model2.mat'; % File to save trained model into
 sett.d1      = 4;                 % Patch size
-sett.workers = 8;                 % Parallelise training
-sett.K       = 20;                % Number of components
+sett.workers = 0;                 % Parallelise training
+sett.K       = 16;                % Number of components
 sett.nit0    = 2;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
 model = PatchCCAprune(model);
 sett.nit0    = 8;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett,model); % Run the fitting (takes hours)
 model = Patch2NN(model);          % Convert model to NN form
-save('/home/john/WIP/SGA2/model2NN.mat','model','sett','-v7.3');
+save('C:\Users\Hester\Desktop\John\Yu\SGA2\model2NN.mat','model','sett','-v7.3');
 

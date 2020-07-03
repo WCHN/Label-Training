@@ -20,7 +20,7 @@ end
 function [data] = initialise_data(data)
 data               = fname2nii(data);
 [data.dm,data.mat] = get_dimmat(data);
-data.ind           = get_ind(data);
+[data.ind, data.p] = get_ind(data);
 
 
 function data = fname2nii(data)
@@ -56,20 +56,26 @@ for n=1:size(data.dat,1)
 end
 
 
-function ind = get_ind(data)
+function [ind,pw] = get_ind(data)
 M = numel(data.code);
 N = 0;
 for n=1:numel(data.dat)
-    N = N+prod(data.dat(n).jitter*2+1);
+    N = N + prod(data.dat(n).jitter*2+1);
 end
 ind = false(N,M);
+pw  = ones(N,1);
 for m=1:M
     o   = 0;
     for n=1:numel(data.dat)
         if ~isempty(data.dat(n).view(m).image)
-            p = prod(data.dat(n).jitter*2+1);
+            jit            = data.dat(n).jitter;
+            p              = prod(jit*2+1);
             ind(o+(1:p),m) = true;
-            o = o+p;
+            sd             = max(data.dat(n).sd,eps);
+            [x1,x2,x3]     = ndgrid(-jit(1):jit(1),-jit(2):jit(2),-jit(3):jit(3));
+            d2             = x1.^2 + x2.^2 + x3.^2;
+            pw(o+(1:p))    = exp((-0.5/sd.^2)*d2(:));
+            o              = o+p;
         end
     end
 end
@@ -113,7 +119,7 @@ for m=1:numel(C)
     case 2
         [F{m},C{m}] = OneHot(F{m});
     end
-    dm = [size(F{m}) 1 1];
+    dm   = [size(F{m}) 1 1];
     F{m} = reshape(F{m},[dm(1)*dm(2)*dm(3),dm(4),dm(5)]);
 end
 

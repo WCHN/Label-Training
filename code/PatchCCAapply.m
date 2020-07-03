@@ -6,6 +6,7 @@ else
     sett = PatchCCAsettings;
 end
 Z     = PatchCCAlatent(model,F,ind,sett);
+%for i=1:numel(Z), Z{i}=Z{i}*2; end
 if nargout>=1, Y     = PatchCCArecon(model,Z,2); end
 if nargout>=2, [~,P] = PatchCCArecon(model,Z,1); end
 

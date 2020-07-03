@@ -1,5 +1,5 @@
-function [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0)
-% FORMAT [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0)
+function [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0,p)
+% FORMAT [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0,p)
 % W   - Nvox x M x K
 % Z   - K  x N
 % Z2  - K2 x N
@@ -7,20 +7,23 @@ function [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0)
 % V2  - K2 x K2
 % nu0 - 1  x 1
 % v0  - 1  x 1
+% p   - N x 1
 
 Nvox = size(W,1);
 M    = size(W,2);
 K    = size(Z ,1);
 K2   = size(Z2,1);
-N    = size(Z ,2);
+%Ns  = size(Z ,2);
+Ns   = sum(p);
 
-if nargin<4, V   = zeros(K ,K ); end
-if nargin<5, V2  = zeros(K2,K2); end
 
-EZZ = [Z*Z'+V, Z*Z2'; Z2*Z', Z2*Z2'+V2];  % Expectation of Z*Z'
+%EZZ = [Z*Z'+V, Z*Z2'; Z2*Z', Z2*Z2'+V2];  % Expectation of Z*Z'
+EZZ  = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
+	Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
+
 % Wishart posterior
-% P~W(inv(EZZ + (nu0*v0)*eye(K+K2)),(N+nu0));
-P   = inv(EZZ + (nu0*v0)*eye(K+K2))*(N+nu0); % See https://en.wikipedia.org/wiki/Wishart_distribution
+% P~W(inv(EZZ + (nu0*v0)*eye(K+K2)),(Ns+nu0));
+P   = inv(EZZ + (nu0*v0)*eye(K+K2))*(Ns+nu0); % See https://en.wikipedia.org/wiki/Wishart_distribution
 P11 = P(1:K,    1:K  );                      % z~N(inv(P11)*(-P12*z2), inv(P11)) 
 P12 = P(1:K, K+(1:K2));
 
