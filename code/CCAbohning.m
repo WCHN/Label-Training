@@ -1,6 +1,6 @@
-function [mod,Z,V] = CCAbohning(F,ind,sett,p,varargin)
+function [mod,Z,V] = CCAbohning(F,ind,sett,varargin)
 %% Bohning bound CCA stuff
-%% [mod,Z,V] = CCAbohning(F,ind,sett,p)
+%% [mod,Z,V] = CCAbohning(F,ind,sett)
 %%
 
 % F  - Nvox x M x N
@@ -10,7 +10,7 @@ function [mod,Z,V] = CCAbohning(F,ind,sett,p,varargin)
 % W  - Nvox x M x K
 % A  - K x K
 %% 
-%% [mod,Z,V] = CCAbohning(F,ind,sett,p,mod,Z,V,Z0,P0)
+%% [mod,Z,V] = CCAbohning(F,ind,sett,mod,Z,V,Z0,P0)
 %
 %%
 % Figure out the various desired settings.
@@ -22,7 +22,7 @@ else
     sett = PatchCCAsettings;
 end
 
-if nargin<=4
+if nargin<=3
     if isa(F,'cell')
         c = cell(1,numel(F));
     else
@@ -41,7 +41,7 @@ if nargin<=4
     randn('seed',0);
     B0    = eye(K)*sett.b0;
     Z     = randn(K,N,'single');
-    Z     = bsxfun(@minus,Z,mean(Z,2));
+    Z     = Z - mean(Z,2);
 else
     mod   = varargin{1};
     Z     = varargin{2};
@@ -49,17 +49,17 @@ else
     B0    = eye(K)*sett.b0;
 end
 
-if nargin<7
+if nargin<6
     V     = eye(K);
 else
     V     = varargin{3};
 end
-if nargin<8
+if nargin<7
     Z0 = zeros(K,N);
 else
     Z0 = varargin{4};
 end
-if nargin<9
+if nargin<8
     P0 = eye(K)/sett.v0;
 else
     P0 = varargin{5};
@@ -71,7 +71,7 @@ for iter=1:sett.nit
 
     % Variational M-step
     for l=1:numel(mod)
-        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), V, mod(l).mu, mod(l).W, B0, p(ind(:,l)));
+        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), V, mod(l).mu, mod(l).W, B0);
     end
 
     % Variational E-step
@@ -92,19 +92,16 @@ for iter=1:sett.nit
             end
         end
         Z(:,n) = H\g;
-        V      = V + p(n)*inv(H);
+        V      = V + inv(H);
     end
-   %Z  = Z - mean(Z,2); % Mean-centre
-    Z  = bsxfun(@minus, Z, (Z*p)/sum(p));
+    Z  = Z-mean(Z,2); % Mean-centre
 end
-
 if sett.do_orth
-   %EZZ      = Z*Z'+V;  % Expectation of Z'*Z
-    EZZ      = Z*bsxfun(@times,p,Z') + V;
+    EZZ      = Z*Z'+V;  % Expectation of Z'*Z
     [~,~,R] = svd(EZZ); % Rotation to diagonalise EZZ 
     Z        = R'*Z;    % Rotate the matrices.
-   %Z0       = R'*Z0;
-   %P0       = R'*P0*R;
+    Z0       = R'*Z0;
+    P0       = R'*P0*R;
     V        = R'*V*R;
     for l=1:numel(mod)
         Nvox     = size(F{l},1);
@@ -121,40 +118,36 @@ end
 %%
 % * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
 %   Institute of Technology. 2012:1-21.
-function [mu,W] = UpdateW(F,Z,V,mu,W,B,p)
+function [mu,W] = UpdateW(F,Z,V,mu,W,B)
 Nvox  = size(F,1);
 M     = size(F,2);
 N     = size(F,3);
 K     = size(W,3);
-Ns    = sum(p);
-A     = Abohning(M);
+
+A = Abohning(M);
 %%
 % Update $\boldsymbol\mu$.
-Vm = inv(Ns*A);                          % Cov mu
+Vm = inv(N*A);                           % Cov mu
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
     msk      = ~isfinite(Fi);
-    Psi      = bsxfun(@plus,reshape(W(i,:,:),[M,K])*Z, mu(i,:)');
-    R        = bsxfun(@plus,Fi, bsxfun(@minus, A*mu(i,:)', SoftMax(Psi,1)));
+    Psi      = reshape(W(i,:,:),[M,K])*Z + mu(i,:)';
+    R        = Fi + A*mu(i,:)' - SoftMax(Psi,1);
     R(msk)   = 0;
-   %mu(i,:)  = (Vm*sum(R,2))';           % Update of mu
-    mu(i,:)  = (Vm*(R*p))';
+    mu(i,:)  = (Vm*sum(R,2))';           % Update of mu
 end
-
 
 %% 
 % Update ${\bf W}$.
-%Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
-Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)));
+Vw = inv(kron(Z*Z'+V,A) + kron(B,eye(M))); % Cov W
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
     msk      = ~isfinite(Fi);
     Psi0     = reshape(W(i,:,:),[M,K])*Z;
-    Psi      = bsxfun(@plus, Psi0, mu(i,:)');
-    R        = bsxfun(@plus,Fi, bsxfun(@minus, A*Psi0, SoftMax(Psi,1)));
+    Psi      = Psi0+mu(i,:)';
+    R        = Fi + A*Psi0 - SoftMax(Psi,1);
     R(msk)   = 0;
-   %g        = reshape(R*Z',[M*K,1]);
-    g        = reshape(R*bsxfun(@times,p,Z'),[M*K,1]); 
+    g        = reshape(R*Z',[M*K,1]); 
     W(i,:,:) = reshape((Vw*g)',[1 M K]); % Update of W
 end
 
@@ -218,8 +211,8 @@ g    = reshape(r*reshape(W,[Nvox*M,K]),[K,1]);
 % $$p_k = \frac{\exp \psi_k}{1+\sum_{c=1}^{K-1} \exp \psi_c}$$
 function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
-E   = exp(bsxfun(@minus,Psi,mx));
-P   = bsxfun(@rdivide, E, sum(E,d)+exp(-mx));
+E   = exp(Psi-mx);
+P   = E./(sum(E,d)+exp(-mx));
 
 %%
 %%

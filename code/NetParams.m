@@ -18,6 +18,7 @@ Ns   = sum(p);
 
 
 %EZZ = [Z*Z'+V, Z*Z2'; Z2*Z', Z2*Z2'+V2];  % Expectation of Z*Z'
+<<<<<<< HEAD
 EZZ  = [Z *bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
 	    Z2*bsxfun(@times,p,Z'),  Z2*bsxfun(@times,p,Z2')+V2];
 
@@ -26,6 +27,15 @@ EZZ  = [Z *bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
 P   = inv(EZZ + (nu0*v0)*eye(K+K2)); % See https://en.wikipedia.org/wiki/Wishart_distribution
 nu  = Ns+nu0;
 P11 = P(1:K,    1:K  );              % z~N(inv(P11)*(-P12*z2), inv(P11)) 
+=======
+EZZ  = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
+	Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
+
+% Wishart posterior
+% P~W(inv(EZZ + (nu0*v0)*eye(K+K2)),(Ns+nu0));
+P   = inv(EZZ + (nu0*v0)*eye(K+K2))*(Ns+nu0); % See https://en.wikipedia.org/wiki/Wishart_distribution
+P11 = P(1:K,    1:K  );                      % z~N(inv(P11)*(-P12*z2), inv(P11)) 
+>>>>>>> 54f53ad10b7df28791c517293c8bbbc3a303262a
 P12 = P(1:K, K+(1:K2));
 
 % "Bohning bound": Hessian matrix replaced by a global lower bound in the Loewner ordering.

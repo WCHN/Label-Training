@@ -39,8 +39,8 @@ for l=1:numel(mod)
     K        = size(mod(l).W,3);
     mod(l).W = reshape(reshape(mod(l).W,[Nvox*M,K])*R,[Nvox,M,K]);
 end
-nz  = sum(Z.^2,2)/size(Z,2);
-ind = nz>sqrt(1/1000000);
+nz  = sqrt(sum(Z.^2,2)/size(Z,2));
+ind = nz>0.001;
 Z   = Z(ind,:);
 V   = V(ind,ind);
 for l=1:numel(mod)

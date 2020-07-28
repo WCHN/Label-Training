@@ -78,8 +78,13 @@ for it=1:(2*sett.nit0)
             end
 
             % Run the parfor on the collections of stuff
+<<<<<<< HEAD
             parfor(p1=1:numel(patches), sett.workers)
            %for p1=1:numel(patches)
+=======
+%           parfor(p1=1:numel(patches), sett.workers)
+            for p1=1:numel(patches)
+>>>>>>> 54f53ad10b7df28791c517293c8bbbc3a303262a
                 if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2)
                     patch = patches{p1};
                     F     = Fs{p1};
@@ -135,14 +140,20 @@ if isempty(Z2), Z2 = zeros(0,size(ind,1)); end
 
 % Expectation of Z*Z' over the central patch and the 6 neighbouring
 % patches
+<<<<<<< HEAD
 %EZZ = [Z*Z'+V Z*Z2'; Z2*Z' Z2*Z2'+V2];
+=======
+>>>>>>> 54f53ad10b7df28791c517293c8bbbc3a303262a
 EZZ = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
        Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
 
 % Various dimensions
 K   = size(Z,1);
 K2  = size(Z2,1);
+<<<<<<< HEAD
 %N  = size(Z,2);
+=======
+>>>>>>> 54f53ad10b7df28791c517293c8bbbc3a303262a
 Ns  = sum(p);
 
 % Expectation of precision matrix, drawn from a Wishart distribution
