@@ -16,21 +16,25 @@ Nvox = size(W,1);
 M    = size(W,2);
 K    = size(Z ,1);
 K2   = size(Z2,1);
-%Ns  = size(Z ,2);
 Ns   = sum(p);
 
 
-%EZZ = [Z*Z'+V, Z*Z2'; Z2*Z', Z2*Z2'+V2];  % Expectation of Z*Z'
-EZZ  = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
-	Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
+% E[Z*Z'], weighted by p
+EZZ  = [Z *bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
+        Z2*bsxfun(@times,p,Z'),  Z2*bsxfun(@times,p,Z2')+V2];
 
 % Wishart posterior
-% P~W(inv(EZZ + (nu0*v0)*eye(K+K2)),(Ns+nu0));
-P   = inv(EZZ + (nu0*v0)*eye(K+K2))*(Ns+nu0); % See https://en.wikipedia.org/wiki/Wishart_distribution
-P11 = P(1:K,    1:K  );                      % z~N(inv(P11)*(-P12*z2), inv(P11)) 
+% See https://en.wikipedia.org/wiki/Wishart_distribution
+% P ~ W(Psi,nu);
+%Psi0 = eye(K+K2)/(nu0*v0)
+Psi = inv(EZZ + (nu0*v0)*eye(K+K2));
+nu  = Ns+nu0;
+P   = Psi*nu; % E[P]
+P11 = P(1:K,    1:K  );
 P12 = P(1:K, K+(1:K2));
 
-% "Bohning bound": Hessian matrix replaced by a global lower bound in the Loewner ordering.
+% "Bohning bound": Hessian matrix replaced by a global lower bound in
+% the Loewner ordering.
 % * Böhning D. Multinomial logistic regression algorithm. Annals of the
 %   institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 % * Murphy K. Machine learning: a probabilistic approach. Massachusetts
@@ -43,6 +47,7 @@ for i=1:Nvox
     Wi = reshape(W(i,:,:),[M,K]);
     H  = H + Wi'*A*Wi;
 end
+% V = inv(H)
 
 % Gauss-Newton optimisation can be expressed as a type of Res-Net
 % These are the weights required. See NetApply.m for how the weights

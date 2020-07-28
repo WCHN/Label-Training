@@ -73,7 +73,6 @@ end
 %%
 % Run the iterative variational Bayesian EM algorithm
 for iter=1:sett.nit
-
     %%
     % Variational M-step
     for l=1:numel(mod)
@@ -110,7 +109,7 @@ for iter=1:sett.nit
 end
 
 %%
-% Rotate to make $E[{\bf Z}{\bf Z}^T]$ diagonal
+% Rotate to make ${\bf Z}{\bf Z}^T$ diagonal
 if sett.do_orth
     ZZ      = Z*bsxfun(@times,p,Z');
     [~,~,R] = svd(ZZ); % Rotation to diagonalise ZZ 
@@ -136,6 +135,7 @@ end
 %   Institute of Technology. 2012:1-21.
 function [mu,W] = UpdateW(F,Z,V,mu,W,B,p)
 if isempty(mu) return; end
+
 Nvox  = size(F,1);
 M     = size(F,2);
 N     = size(F,3);
@@ -155,7 +155,6 @@ for i=1:Nvox
     mu(i,:)  = (Vm*(R*p))';              % Update of mu
 end
 
-
 %% 
 % Update $\hat{\bf W}$.
 Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)-1/(M+1)));
@@ -166,7 +165,7 @@ for i=1:Nvox
     Psi      = bsxfun(@plus, Psi0, mu(i,:)');
     R        = bsxfun(@plus,Fi, bsxfun(@minus, A*Psi0, SoftMax(Psi,1)));
     R(msk)   = 0;
-    g        = reshape(R*bsxfun(@times,p,Z'),[M*K,1]); 
+    g        = reshape(R*bsxfun(@times,p,Z'),[M*K,1]);
     W(i,:,:) = reshape((Vw*g)',[1 M K]); % Update of W
 end
 
@@ -212,7 +211,6 @@ P    = SoftMax(Psi0+mu,2);
 r    = reshape(Fn-P+Psi0*A,[1,Nvox*M]);
 g    = reshape(r*reshape(W,[Nvox*M,K]),[K,1]);
 
-
 %% SoftMax
 % Safe softmax over dimension $d$, which prevents over/underflow.
 % 
@@ -225,6 +223,5 @@ function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
 E   = exp(bsxfun(@minus,Psi,mx));
 P   = bsxfun(@rdivide, E, sum(E,d)+exp(-mx));
-
 %%
 %%

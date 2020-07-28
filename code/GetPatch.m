@@ -74,10 +74,17 @@ for m=1:M
             jit            = data.dat(n).jitter;
             p              = prod(jit*2+1);
             ind(o+(1:p),m) = true;
+<<<<<<< HEAD
+	    sd             = max(data.dat(n).sd,eps);
+	    [x1,x2,x3]     = ndgrid(-jit(1):jit(1),-jit(2):jit(2),-jit(3):jit(3));
+	    d2             = x1.^2 + x2.^2 + x3.^2;
+	    pw(o+(1:p))    = exp((-0.5/sd.^2)*d2(:));
+=======
             sd             = max(data.dat(n).sd,eps);
             [x1,x2,x3]     = ndgrid(-jit(1):jit(1),-jit(2):jit(2),-jit(3):jit(3));
             d2             = x1.^2 + x2.^2 + x3.^2;
             pw(o+(1:p))    = exp((-0.5/sd.^2)*d2(:));
+>>>>>>> 54f53ad10b7df28791c517293c8bbbc3a303262a
             o              = o+p;
         end
     end

@@ -156,8 +156,8 @@ if isempty(Z2), Z2 = zeros(0,size(ind,1)); end
 
 % Expectation of Z*Z' over the central patch and the 6 neighbouring
 % patches
-EZZ = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
-       Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
+EZZ = [Z *bsxfun(@times,p,Z')+V, Z *bsxfun(@times,p,Z2')
+       Z2*bsxfun(@times,p,Z'),   Z2*bsxfun(@times,p,Z2')+V2];
 
 % Various dimensions
 K   = size(Z,1);

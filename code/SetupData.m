@@ -35,7 +35,7 @@ end
 %data = spm_jsonread('/tmp/data.jsn');
 
 sett  = PatchCCAsettings;         % Default settings
-sett.matname = 'C:\Users\Hester\Desktop\John\Yu\SGA2\model2.mat'; % File to save trained model into
+sett.matname = fullfile(datadir,'model2.mat'); % File to save trained model into
 sett.d1      = 4;                 % Patch size
 sett.workers = 0;                 % Parallelise training
 sett.K       = 25;                % Number of components
@@ -45,5 +45,5 @@ model = PatchCCAprune(model);
 sett.nit0    = 8;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett,model); % Run the fitting (takes hours)
 model = Patch2NN(model);          % Convert model to NN form
-save('C:\Users\Hester\Desktop\John\Yu\SGA2\model2NN.mat','model','sett','-v7.3');
+save(fullfile(datadir,'model2NN.mat'),'model','sett','-v7.3');
 
