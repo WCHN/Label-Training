@@ -4,10 +4,14 @@ function model = Patch2NN(model,ind,sett)
 % model - The learned model from PatchCCAtrain
 % ind   - Index of the data channel to optimise from
 % sett  - Settings (uses PatchCCAsettings if missing)
+%         Uses sett.nu and sett.v0
 %
 % Takes a fitted model, and converts to a form that allows
 % the distributions of latent variables to be estimated by
 % a neural network type formulation.
+%
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 if nargin<2, ind = 1; end
 if ~isfield(model,'Z'), error('Model is already converted to NN form.'); end
@@ -52,8 +56,10 @@ for p3=1:size(model,3)
             if isempty(Z2), Z2 = zeros(0,size(Z,2)); end
 
             if ~isempty(patch.mod)
-                [patch.W0,patch.W1,patch.W2,patch.Va] = NetParams(patch.mod(ind).W,Z,Z2,V,V2,sett.nu0,sett.v0,patch.p);
+                [patch.W0,patch.W1,patch.W2,patch.Va] = NetParams(patch.mod(ind).W,Z,Z2,V,V2,...
+                                                                  sett.nu0,sett.v0,patch.p);
                 patch.ind = ind;
+                patch.mod = rmfield(patch.mod,'V');
             end
             model(p1,p2,p3) = patch;
         end

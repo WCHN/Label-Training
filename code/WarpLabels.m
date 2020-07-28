@@ -1,4 +1,7 @@
 function f1 = WarpLabels(f0,theta)
+%
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 dm0 = size(theta);
 if numel(dm0)~=4,    error('Inappropriate deformation.'); end

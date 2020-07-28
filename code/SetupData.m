@@ -1,3 +1,7 @@
+% Example training script
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
+
 datadir  = 'C:\Users\Hester\Desktop\John\Yu\SGA2\data\train'; % Edit accordingly
 files    = spm_select('FPList',datadir,'^wc1.*\.nii$');
 v        = struct('view', {'',''});
@@ -34,7 +38,7 @@ sett  = PatchCCAsettings;         % Default settings
 sett.matname = 'C:\Users\Hester\Desktop\John\Yu\SGA2\model2.mat'; % File to save trained model into
 sett.d1      = 4;                 % Patch size
 sett.workers = 0;                 % Parallelise training
-sett.K       = 16;                % Number of components
+sett.K       = 25;                % Number of components
 sett.nit0    = 2;                 % Number of outer iterations
 model = PatchCCAtrain(data,sett); % Run the fitting (takes hours)
 model = PatchCCAprune(model);

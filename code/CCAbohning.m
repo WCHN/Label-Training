@@ -1,17 +1,19 @@
 function [mod,Z,V] = CCAbohning(F,ind,sett,p,varargin)
 %% Bohning bound CCA stuff
-%% [mod,Z,V] = CCAbohning(F,ind,sett,p)
-%%
-
-% F  - Nvox x M x N
-% Z  - K x N
-% V  - K x K
-% mu - Nvox x M
-% W  - Nvox x M x K
-% A  - K x K
-%% 
-%% [mod,Z,V] = CCAbohning(F,ind,sett,p,mod,Z,V,Z0,P0)
 %
+% [mod,Z,V] = CCAbohning(F,ind,sett,p,mod,Z,Z0,P0)
+% F{l}      - Nvox x M x N
+% ind       - N x L
+% p         - N x 1
+% mod(l).mu - Nvox x M
+% mod(l).W  - Nvox x M x K
+% mod(l).V  - K x K
+% Z         - K x N
+% Z0        - K x N
+% P0        - K x K
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
+
 %%
 % Figure out the various desired settings.
 N     = size(ind,1);
@@ -22,7 +24,7 @@ else
     sett = PatchCCAsettings;
 end
 
-if nargin<=4
+if nargin<5
     if isa(F,'cell')
         c = cell(1,numel(F));
     else
@@ -37,50 +39,56 @@ if nargin<=4
         end
         mod(l).mu = zeros(size(F{l},1), size(F{l},2),'single');
         mod(l).W  = zeros(size(F{l},1), size(F{l},2), K,'single');
+        mod(l).V  = eye(K,K,'single')*0;
     end
-    randn('seed',0);
     B0  = eye(K)*sett.b0;
-    Z   = randn(K,N,'single');
-    Z   = bsxfun(@minus, Z, (Z*p)/sum(p));
 else
     mod = varargin{1};
-    Z   = varargin{2};
     K   = size(mod(1).W,3);
     B0  = eye(K)*sett.b0;
 end
+if nargin<6
+    randn('seed',0);
+    Z   = randn(K,N,'single');
+    Z   = bsxfun(@minus, Z, (Z*p)/sum(p));
+else
+    Z   = varargin{2};
+end
+if nargin<7, Z0                 = zeros(K,N);     else Z0 = varargin{3}; end
+if nargin<8, P0                 = eye(K)/sett.v0; else P0 = varargin{4}; end
 
-if nargin<7
-    V  = eye(K);
-else
-    V  = varargin{3};
-end
-if nargin<8
-    Z0 = zeros(K,N);
-else
-    Z0 = varargin{4};
-end
-if nargin<9
-    P0 = eye(K)/sett.v0;
-else
-    P0 = varargin{5};
+%%
+% Various assertions.
+assert(size(Z,2)==N && size(Z0,2)==N && numel(p)==N && size(ind,1))
+assert(size(Z,1)==K && size(Z0,1)==K)
+assert(numel(mod)==size(ind,2))
+for l=1:numel(mod)
+    assert(size(mod(l).V,1)==K)
+    assert(size(mod(l).V,2)==K)
+    assert(size(mod(l).W,3)==K)
+    assert(size(mod(l).W,1)==size(mod(l).mu,1))
+    assert(size(mod(l).W,2)==size(mod(l).mu,2))
 end
 
 %%
-% Run the iterative variational Bayesian EM algorithm itself.
+% Run the iterative variational Bayesian EM algorithm
 for iter=1:sett.nit
 
+    %%
     % Variational M-step
     for l=1:numel(mod)
-        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), V, mod(l).mu, mod(l).W, B0, p(ind(:,l)));
+        [mod(l).mu,mod(l).W] = UpdateW(F{l}, Z(:,ind(:,l)), mod(l).V, mod(l).mu, mod(l).W, B0, p(ind(:,l)));
     end
 
+    %%
     % Variational E-step
     Hc  = cell(1,numel(mod));
     for l=1:numel(Hc)
         Hc{l} = HessZ(mod(l).W);
     end
-    csi = cumsum(ind,1);
-    V   = 0;
+    csi        = cumsum(ind,1);
+    V          = single(0);
+    [mod(:).V] = deal(single(0));
     for n=1:N
         z  = Z(:,n);
         H  = P0;
@@ -92,14 +100,20 @@ for iter=1:sett.nit
             end
         end
         Z(:,n) = H\g;
-        V      = V + p(n)*inv(H);
+        Vn     = inv(H);
+        V      = V + p(n)*Vn;
+        for l=1:numel(mod)
+            if ind(n,l), mod(l).V = mod(l).V + p(n)*Vn; end
+        end
     end
     Z  = bsxfun(@minus, Z, (Z*p)/sum(p));
 end
 
+%%
+% Rotate to make $E[{\bf Z}{\bf Z}^T]$ diagonal
 if sett.do_orth
-    EZZ     = Z*bsxfun(@times,p,Z') + V;
-    [~,~,R] = svd(EZZ); % Rotation to diagonalise EZZ 
+    ZZ      = Z*bsxfun(@times,p,Z');
+    [~,~,R] = svd(ZZ); % Rotation to diagonalise ZZ 
     Z       = R'*Z;    % Rotate the matrices.
    %Z0      = R'*Z0;
    %P0      = R'*P0*R;
@@ -108,15 +122,16 @@ if sett.do_orth
         Nvox     = size(F{l},1);
         M        = size(F{l},2);
         mod(l).W = reshape(reshape(mod(l).W,[Nvox*M,K])*R,[Nvox,M,K]);
+        mod(l).V = R'*mod(l).V*R;
     end
 end
 
 
 %% UpdateW
 % Update the mean ($\bf\mu$) and basis functions ($\bf W$).
-%
-% See Murphy's textbook.
 %%
+% See Murphy's textbook.
+%
 % * Murphy K. _Machine learning: a probabilistic approach_ . Massachusetts
 %   Institute of Technology. 2012:1-21.
 function [mu,W] = UpdateW(F,Z,V,mu,W,B,p)
@@ -129,7 +144,7 @@ Ns    = sum(p);
 A     = Abohning(M);
 
 %%
-% Update $\boldsymbol\mu$.
+% Update $\hat{\bf\mu}$.
 Vm = inv(Ns*A);                          % Cov mu
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
@@ -142,7 +157,7 @@ end
 
 
 %% 
-% Update ${\bf W}$.
+% Update $\hat{\bf W}$.
 Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)-1/(M+1)));
 for i=1:Nvox
     Fi       = reshape(F(i,:,:),[M,N]);
@@ -169,18 +184,6 @@ for i=1:Nvox
     Wi = reshape(W(i,:,:),[M,K]);
     H  = H + Wi'*A*Wi;
 end
-
-
-%% ComputeWW
-% Compute ${\bf W}^T{\bf W}$, accounting for image dimensions etc (unused).
-%%
-function WW = ComputeWW(W)
-Nvox = size(W,1);
-M    = size(W,2);
-K    = size(W,3);
-W    = reshape(W,[Nvox*M, K]);
-WW   = W'*W;
-
 
 %% Abohning
 % "Bohning bound": Hessian matrix replaced by a global lower bound in the Loewner ordering.

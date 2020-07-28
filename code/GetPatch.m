@@ -1,6 +1,6 @@
 function varargout=GetPatch(data,pos)
 %% GetPatch
-% FORMAT data = GetPatch(data)
+% FORMAT data = GetPatch(data,pos)
 % Takes a relatively simple data strucure with filenames
 % etc, and converts to a data structure with NIfTI headers etc.
 % This allows data to be read in more effectively via:
@@ -9,6 +9,9 @@ function varargout=GetPatch(data,pos)
 % Reads image data (with possible jitter) into F. C will
 % contain a vector of codes.
 %
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
+
 if nargin==1
     % 
     [varargout{1:nargout}] = initialise_data(data);

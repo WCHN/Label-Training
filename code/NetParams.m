@@ -8,6 +8,9 @@ function [W0,W1,W2,V] = NetParams(W,Z,Z2,V,V2,nu0,v0,p)
 % nu0 - 1  x 1
 % v0  - 1  x 1
 % p   - N x 1
+%
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 Nvox = size(W,1);
 M    = size(W,2);
@@ -32,10 +35,10 @@ P12 = P(1:K, K+(1:K2));
 %   institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 % * Murphy K. Machine learning: a probabilistic approach. Massachusetts
 %   Institute of Technology. 2012:1-21.
-A = 0.5*(eye(M)-1/(M+1));
+A   = 0.5*(eye(M)-1/(M+1));
 
 % Compute Bohning's approximation to the Hessian
-H = P11;
+H   = P11;
 for i=1:Nvox
     Wi = reshape(W(i,:,:),[M,K]);
     H  = H + Wi'*A*Wi;
@@ -44,8 +47,8 @@ end
 % Gauss-Newton optimisation can be expressed as a type of Res-Net
 % These are the weights required. See NetApply.m for how the weights
 % are applied.
-W0     = -H\P12;
-W1     =  H\reshape(W,[Nvox*M,K])';
-W2     =  W1*kron(A,eye(Nvox))*reshape(W,[Nvox*M,K]);
-V      = inv(H);
+W0  = -H\P12;
+W1  =  H\reshape(W,[Nvox*M,K])';
+W2  =  W1*kron(A,eye(Nvox))*reshape(W,[Nvox*M,K]);
+V   = inv(H);
 

@@ -15,6 +15,8 @@ function model=PatchCCAtrain(data,sett,model)
 %         workers - Number of workers in parfor                          [0]
 % model - the estimated model
 %
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 % Default settings
 if nargin>=2
@@ -57,6 +59,7 @@ end
 for it=1:(2*sett.nit0)
     fprintf('%3d-%d:', floor((it+1)/2), rem(it-1,2)+1);
     for p3=1:size(model,3)
+   %for p3=15
         fprintf(' %d', p3);
         for p2=1:size(model,2)
             % Collect things together for running a parfor. Can't run
@@ -77,20 +80,37 @@ for it=1:(2*sett.nit0)
                 end
             end
 
-            % Run the parfor on the collections of stuff
-%           parfor(p1=1:numel(patches), sett.workers)
-            for p1=1:numel(patches)
-                if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2)
-                    patch = patches{p1};
-                    F     = Fs{p1};
-                    Z2    = Z2s{p1};
-                    V2    = V2s{p1};
-                    if isempty(patch.mod)
-                        [patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p);
-                    else
-                        patch   = update_node(patch,F,ind,Z2,V2,sett);
+            if sett.workers==0
+                % Use a for loop instead of parfor
+                for p1=1:numel(patches)
+                    if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2)
+                        patch = patches{p1};
+                        F     = Fs{p1};
+                        Z2    = Z2s{p1};
+                        V2    = V2s{p1};
+                        if isempty(patch.mod)
+                            [patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p);
+                        else
+                            patch   = update_node(patch,F,ind,Z2,V2,sett,p);
+                        end
+                        patches{p1} = patch;
                     end
-                    patches{p1} = patch;
+                end
+            else
+                % Run the parfor on the collections of stuff
+                parfor(p1=1:numel(patches), sett.workers)
+                    if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2)
+                        patch = patches{p1};
+                        F     = Fs{p1};
+                        Z2    = Z2s{p1};
+                        V2    = V2s{p1};
+                        if isempty(patch.mod)
+                            [patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p);
+                        else
+                            patch   = update_node(patch,F,ind,Z2,V2,sett,p);
+                        end
+                        patches{p1} = patch;
+                    end
                 end
             end
 
@@ -110,6 +130,7 @@ for it=1:(2*sett.nit0)
 end
 
 
+
 function [Z2,V2] = get_neighbours_latent(model,p1,p2,p3)
 Z2  = [GetZ(p1  ,p2  ,p3+1,model)
        GetZ(p1  ,p2  ,p3-1,model)
@@ -125,12 +146,12 @@ V2  = blkdiag(GetV(p1  ,p2  ,p3+1,model),...
               GetV(p1-1,p2  ,p3  ,model));
 
 
-function patch = update_node(patch,F,ind,Z2,V2,sett)
+
+function patch = update_node(patch,F,ind,Z2,V2,sett,p)
 % Current patch
 Z     = patch.Z;
 V     = patch.V;
 mod   = patch.mod;
-p     = patch.p;
 if isempty(Z2), Z2 = zeros(0,size(ind,1)); end
 
 % Expectation of Z*Z' over the central patch and the 6 neighbouring
@@ -146,13 +167,14 @@ Ns  = sum(p);
 % Expectation of precision matrix, drawn from a Wishart distribution
 P   = inv(EZZ + (sett.nu0*sett.v0)*eye(K+K2))*(Ns+sett.nu0);
 
-% Determine distribution of the central patch Z ~ N(Z0,inv(P11)) % This is used as a prior when updating the CCA-like fitting
+% Determine distribution of the central patch Z ~ N(Z0,inv(P11))
+% This is used as a prior when updating the CCA-like fitting
 P11 = P(1:K,  1:K    );
 P12 = P(1:K, (1:K2)+K);
 Z0  = -P11\P12*Z2;
 
 % Fit the latent variable model again, and update the data structure
-[patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p,mod,Z,V,Z0,P11);
+[patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p,mod,Z,Z0,P11);
 
 
 
@@ -165,6 +187,8 @@ if p1>=1 && p1<=size(model,1) && ...
 else
     Z = [];
 end
+
+
 
 function V = GetV(p1,p2,p3,model)
 if p1>=1 && p1<=size(model,1) && ...

@@ -5,6 +5,9 @@ function model = PatchCCAprune(model)
 %
 % Takes a fitted model, orthogonalise and remove
 % irrelevent latent variables.
+%
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 
 fprintf('Pruning:    ');
@@ -28,9 +31,8 @@ Z       = patch.Z;
 V       = patch.V;
 mod     = patch.mod;
 p       = patch.p;
-%EZZ    = Z*Z'+V;   % Expectation of Z'*Z
-EZZ     = Z*bsxfun(@times,p,Z')+V;
-[~,~,R] = svd(EZZ); % Rotation to diagonalise EZZ 
+ZZ      = Z*bsxfun(@times,p,Z');
+[~,~,R] = svd(ZZ); % Rotation to diagonalise ZZ 
 Z       = R'*Z;     % Rotate the matrices.
 V       = R'*V*R;
 for l=1:numel(mod)
@@ -44,6 +46,7 @@ ind = nz>0.001;
 Z   = Z(ind,:);
 V   = V(ind,ind);
 for l=1:numel(mod)
+    mod(l).V = mod(l).V(ind,ind);
     mod(l).W = mod(l).W(:,:,ind);
 end
 patch.mod = mod;

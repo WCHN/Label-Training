@@ -2,11 +2,13 @@ function Z = PatchCCAlatent(model,F,ind,sett,Z)
 % Obtain latent variables for a new image
 % Z = PatchCCAlatent(model,F,ind,sett,Z)
 % model - The model (computed by PatchCCAtrain and Patch2NN)
-% F     - Data to fit the latent variables to
+% F     - Data to fit the latent variables to (3D/4D)
 % ind   - Index of the data channel that F corresponds with
 % sett  - Settings (uses PatchCCAsettings if missing)
 % Z     - Optional starting estimates for latent variables
 %
+%_______________________________________________________________________
+% Copyright (C) 2019-2020 Wellcome Centre for Human Neuroimaging
 
 if nargin<3, ind = 1; end
 if nargin<4
@@ -14,6 +16,8 @@ if nargin<4
 else
     sett = PatchCCAsettings(sett);
 end
+nit0 = sett.nit0;
+nit  = sett.nit;
 
 if ~isfield(model,'W0'), error('First need to run Patch2NN.'); end
 
@@ -29,7 +33,8 @@ if nargin<5
 end
 
 % Estimate most probable latent variables
-for it=1:(2*sett.nit0) % Black & White chessboard updates
+for it=1:(2*nit0) % Black & White chessboard updates
+    if sett.verb && rem(it,2)==1, dZ = 0; end;
     for p3=1:size(model,3) % Loop over z
         for p2=1:size(model,2) % Loop over y
             for p1=1:size(model,1) % Loop over x
@@ -47,13 +52,18 @@ for it=1:(2*sett.nit0) % Black & White chessboard updates
                                GetZ(p1+1,p2  ,p3  , Z)
                                GetZ(p1-1,p2  ,p3  , Z)]; % Neighbouring latent variables (of other colour)
                         % Estimate latent variables, conditional on neighbouring latent variables
-                        Z{p1,p2,p3} = NetApply(Fp,patch.mod(ind).mu,patch.mod(ind).W,patch.W0,patch.W1,patch.W2,z2,Z{p1,p2,p3});
+                        if sett.verb, oZ = Z{p1,p2,p3}; end
+                        Z{p1,p2,p3} = NetApply(Fp,patch.mod(ind).mu,patch.mod(ind).W,...
+                                               patch.W0,patch.W1,patch.W2,z2,Z{p1,p2,p3},nit);
+                        if sett.verb, dZ = dZ + sum((oZ(:)-Z{p1,p2,p3}(:)).^2); end
                     end
                 end
             end
         end
     end
+    if sett.verb && ~rem(it,2), fprintf(' %-.2e', dZ); end
 end
+if sett.verb, fprintf('\n'); end
 
 
 function z = GetZ(p1,p2,p3,Z)
