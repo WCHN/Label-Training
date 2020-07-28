@@ -20,7 +20,7 @@ end
 
 function P = SoftMax(Psi,d)
 mx  = max(Psi,[],d);
-E   = exp(Psi-mx);
-P   = E./(sum(E,d)+exp(-mx));
+E   = exp(bsxfun(@minus, Psi, mx));
+P   = bsxfun(@rdivide, E, sum(E,d)+exp(-mx));
 
 

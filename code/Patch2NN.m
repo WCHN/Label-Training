@@ -52,7 +52,7 @@ for p3=1:size(model,3)
             if isempty(Z2), Z2 = zeros(0,size(Z,2)); end
 
             if ~isempty(patch.mod)
-                [patch.W0,patch.W1,patch.W2,patch.Va] = NetParams(patch.mod(ind).W,Z,Z2,V,V2,sett.nu0,sett.v0);
+                [patch.W0,patch.W1,patch.W2,patch.Va] = NetParams(patch.mod(ind).W,Z,Z2,V,V2,sett.nu0,sett.v0,patch.p);
                 patch.ind = ind;
             end
             model(p1,p2,p3) = patch;
@@ -62,6 +62,7 @@ for p3=1:size(model,3)
 end
 model = rmfield(model,'Z');
 model = rmfield(model,'V');
+model = rmfield(model,'p');
 fprintf('\n');
 
 

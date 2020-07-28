@@ -6,11 +6,14 @@ function model = PatchCCAprune(model)
 % Takes a fitted model, orthogonalise and remove
 % irrelevent latent variables.
 
+
 fprintf('Pruning:    ');
 for p3=1:size(model,3)
     for p2=1:size(model,2)
         for p1=1:size(model,1)
-            model(p1,p2,p3) = Orthogonalise(model(p1,p2,p3));
+            if ~isempty(model(p1,p2,p3).Z)
+                model(p1,p2,p3) = Orthogonalise(model(p1,p2,p3));
+            end
         end
     end
     fprintf('.');
@@ -24,7 +27,9 @@ function patch = Orthogonalise(patch)
 Z       = patch.Z;
 V       = patch.V;
 mod     = patch.mod;
-EZZ     = Z*Z'+V;   % Expectation of Z'*Z
+p       = patch.p;
+%EZZ    = Z*Z'+V;   % Expectation of Z'*Z
+EZZ     = Z*bsxfun(@times,p,Z')+V;
 [~,~,R] = svd(EZZ); % Rotation to diagonalise EZZ 
 Z       = R'*Z;     % Rotate the matrices.
 V       = R'*V*R;

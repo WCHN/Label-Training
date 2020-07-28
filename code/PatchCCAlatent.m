@@ -30,6 +30,7 @@ end
 
 % Estimate most probable latent variables
 for it=1:(2*sett.nit0) % Black & White chessboard updates
+    pZ=Z;
     for p3=1:size(model,3) % Loop over z
         for p2=1:size(model,2) % Loop over y
             for p1=1:size(model,1) % Loop over x
@@ -53,6 +54,10 @@ for it=1:(2*sett.nit0) % Black & White chessboard updates
             end
         end
     end
+    ssd=0;
+    ss1=0;
+    for i=1:numel(Z), ssd = ssd+sum(sum(((Z{i}-pZ{i}).^2))); ss1 = ss1 + sum(sum(Z{i}.^2)); end
+    fprintf('%g %g\n', ss1, ssd);
 end
 
 

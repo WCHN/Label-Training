@@ -26,6 +26,7 @@ end
 data = GetPatch(data);
 dm   = data.dm;
 ind  = data.ind;
+p    = data.p;
 
 if nargin<3
     % Set up the offsets defining the patches
@@ -35,7 +36,7 @@ if nargin<3
 
     % Set up a data structure to hold the results
     c       = cell(cellfun(@numel,offsets));
-    model   = struct('pos',c,'c',c,'mod',c,'Z',c,'V',c);
+    model   = struct('pos',c,'c',c,'mod',c,'Z',c,'V',c,'p',p);
 
     for p3=1:numel(offsets{3})
         k   = offsets{3}(p3);
@@ -78,13 +79,14 @@ for it=1:(2*sett.nit0)
 
             % Run the parfor on the collections of stuff
             parfor(p1=1:numel(patches), sett.workers)
+           %for p1=1:numel(patches)
                 if rem(p1,2)==rem(p2,2)==rem(p3,2)==rem(it,2)
                     patch = patches{p1};
                     F     = Fs{p1};
                     Z2    = Z2s{p1};
                     V2    = V2s{p1};
                     if isempty(patch.mod)
-                        [patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett);
+                        [patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p);
                     else
                         patch   = update_node(patch,F,ind,Z2,V2,sett);
                     end
@@ -128,28 +130,31 @@ function patch = update_node(patch,F,ind,Z2,V2,sett)
 Z     = patch.Z;
 V     = patch.V;
 mod   = patch.mod;
+p     = patch.p;
 if isempty(Z2), Z2 = zeros(0,size(ind,1)); end
 
 % Expectation of Z*Z' over the central patch and the 6 neighbouring
 % patches
-EZZ = [Z*Z'+V Z*Z2'; Z2*Z' Z2*Z2'+V2];
+%EZZ = [Z*Z'+V Z*Z2'; Z2*Z' Z2*Z2'+V2];
+EZZ = [Z*bsxfun(@times,p,Z')+V, Z*bsxfun(@times,p,Z2')
+       Z2*bsxfun(@times,p,Z'), Z2*bsxfun(@times,p,Z2')+V2];
 
 % Various dimensions
 K   = size(Z,1);
 K2  = size(Z2,1);
-N   = size(Z,2);
+%N  = size(Z,2);
+Ns  = sum(p);
 
 % Expectation of precision matrix, drawn from a Wishart distribution
-P   = inv(EZZ + (sett.nu0*sett.v0)*eye(K+K2))*(N+sett.nu0);
+P   = inv(EZZ + (sett.nu0*sett.v0)*eye(K+K2))*(Ns+sett.nu0);
 
-% Determine distribution of the central patch Z ~ N(Z0,inv(P11))
-% This is used as a prior when updating the CCA-like fitting
+% Determine distribution of the central patch Z ~ N(Z0,inv(P11)) % This is used as a prior when updating the CCA-like fitting
 P11 = P(1:K,  1:K    );
 P12 = P(1:K, (1:K2)+K);
 Z0  = -P11\P12*Z2;
 
 % Fit the latent variable model again, and update the data structure
-[patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,mod,Z,V,Z0,P11);
+[patch.mod,patch.Z,patch.V] = CCAbohning(F,ind,sett,p,mod,Z,V,Z0,P11);
 
 
 
