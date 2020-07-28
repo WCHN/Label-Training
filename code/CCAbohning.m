@@ -112,7 +112,7 @@ end
 % Rotate to make ${\bf Z}{\bf Z}^T$ diagonal
 if sett.do_orth
     ZZ      = Z*bsxfun(@times,p,Z');
-    [~,~,R] = svd(ZZ); % Rotation to diagonalise ZZ 
+    [~,~,R] = svd(ZZ); % Rotation to diagonalise ZZ
     Z       = R'*Z;    % Rotate the matrices.
    %Z0      = R'*Z0;
    %P0      = R'*P0*R;
@@ -155,7 +155,7 @@ for i=1:Nvox
     mu(i,:)  = (Vm*(R*p))';              % Update of mu
 end
 
-%% 
+%%
 % Update $\hat{\bf W}$.
 Vw  = inv(kron(Z*bsxfun(@times,p,Z')+V,A) + kron(B,eye(M)-1/(M+1)));
 for i=1:Nvox
@@ -213,7 +213,7 @@ g    = reshape(r*reshape(W,[Nvox*M,K]),[K,1]);
 
 %% SoftMax
 % Safe softmax over dimension $d$, which prevents over/underflow.
-% 
+%
 % $$p_k = \frac{\exp \psi_k}{\sum_{c=1}^K \exp \psi_c}$$
 %
 % With the constraint \psi_K=0

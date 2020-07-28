@@ -30,7 +30,7 @@ for p=1:numel(model)      % Loop over patches
        dm  = cellfun(@numel,patch.pos); % Dimensions of patch
        z   = Z{p};                      % Latent variables for this patch
        pp  = GetP(z,patch.mod(ind),dm); % Probabilities from latent variables
-      %pp  = GetP_montecarlo(z,patch.Va,patch.mod(ind),dm); 
+      %pp  = GetP_montecarlo(z,patch.Va,patch.mod(ind),dm);
        [~,mp] = max(pp,[],4);           % Most probable value
        Y(patch.pos{:}) = patch.c{ind}(mp); % Use lookup table to assign voxels to most probable label
        if nargout>=2
@@ -46,7 +46,7 @@ function P = GetP_montecarlo(z,V,mod,dm)
 K   = size(mod.W,3);
 M   = size(mod.W,2);
 Ns  = 1000;
-z   = bsxfun(@plus,z,sqrtm(V)*randn(size(z,1),Ns)); 
+z   = bsxfun(@plus,z,sqrtm(V)*randn(size(z,1),Ns));
 psi = bsxfun(@plus, reshape(reshape(mod.W,[prod(dm)*M,K])*z,[dm M Ns]),...
 	                reshape(mod.mu,[dm M]));
 P   = mean(SoftMax(psi,4),5);

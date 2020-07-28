@@ -4,7 +4,7 @@ function Ynative = PatchCCAnative(model,Z,phi)
 % model - The learned model
 % Z     - Cell array of latent variables
 % phi   - Mapping from native to template space
-% 
+%
 % Y     - Native-space patch image
 %
 %_______________________________________________________________________
@@ -48,7 +48,7 @@ for label=labels' % Loop over labels
         if any(selection)
             m        = find(selection);
             dm_patch = cellfun(@numel,patch.pos);              % Dimensions of patch
-            psi      = GetPsi(Z{p},patch.mod(ind),dm_patch,m); % Linear combination of bases 
+            psi      = GetPsi(Z{p},patch.mod(ind),dm_patch,m); % Linear combination of bases
             Pl(patch.pos{:}) = exp(psi-L(patch.pos{:}));       % Softmax values for this label
         end
     end
