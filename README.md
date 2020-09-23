@@ -1,6 +1,6 @@
-# Label-Training
+# Factorisation-based Image Labelling
 ## Overview
-This is a scheme for training and applying a label propagation framework. Some functionality from SPM12 is required for handling images (available from https://www.fil.ion.ucl.ac.uk/spm/software/spm12/). It is still work in progress, so don't expect too much from it until it has been properly debugged and refactored, as well as more extensively tested with different settings.
+This is a scheme for training and applying the factorisation-based image labelling (FIL) framework. Some functionality from SPM12 is required for handling images (available from https://www.fil.ion.ucl.ac.uk/spm/software/spm12/). It is still work in progress, so don't expect too much from it until it has been properly debugged and refactored, as well as more extensively tested with different settings.
 
 ## Rationale
 The approach assumes that segmented (into GM, WM and background) images have been aligned, so does not require the additional complexity of a convolutional approach.
