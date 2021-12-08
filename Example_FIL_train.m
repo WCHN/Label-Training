@@ -27,7 +27,9 @@ tisdir   = fullfile(datadir,'processed'); % MB output
 % Set up a job to run the MB (MultiBrain) registration.
 % Requires files generated previously by the MB toolbox:
 %   mu_X.nii      - Template
+%                   From: https://figshare.com/s/32dc759911b3ec4a1f11
 %   prior_X_3.mat - priors on intensity distribution
+%                   From https://figshare.com/s/fda9d680fee1a6fe1314
 clear matlabbatch
 clear chan
 chan.images      = cellstr(spm_select('FPlist',imagedir,'^.*\.nii')); % Images
