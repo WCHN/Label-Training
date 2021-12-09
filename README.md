@@ -15,6 +15,9 @@ Continuity over patches is achieved by modelling the probability of the latent v
 ## Labelling
 After training, labelling a new image is relatively fast because optimising the latent variables can be formulated within a scheme similar to a recurrent Res-Net (He et al, 2016).
 
+## Example Code
+`Example_FIL_train.m` is an example training script and `fil_label.m` provides an example of how to apply a trained model.  Note that spm12 (https://www.fil.ion.ucl.ac.uk/spm/software/spm12/) and the Multi-Brain toolbox (https://github.com/WTCN-computational-anatomy-group/mb) are required to run the code. This toolbox, along with the Multi-Brain toolbox, will be included in a future SPM release.
+
 ## References
 * Böhning D. Multinomial logistic regression algorithm. Annals of the institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 * Brudfors M, Balbastre Y & Ashburner J. Nonlinear Markov Random Fields Learned via Backpropagation. Accepted for 26th international conference on Information Processing in Medical Imaging (IPMI 2019). Preprint available from http://arxiv.org/abs/1902.10747 .
