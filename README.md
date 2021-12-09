@@ -16,7 +16,7 @@ Continuity over patches is achieved by modelling the probability of the latent v
 After training, labelling a new image is relatively fast because optimising the latent variables can be formulated within a scheme similar to a recurrent Res-Net (He et al, 2016).
 
 ## Example Code
-`Example_FIL_train.m` is an example training script and `fil_label.m` provides an example of how to apply a trained model.  Note that spm12 (https://www.fil.ion.ucl.ac.uk/spm/software/spm12/) and the Multi-Brain toolbox (https://github.com/WTCN-computational-anatomy-group/mb) are required to run the code. This toolbox, along with the Multi-Brain toolbox, will be included in a future SPM release.
+`Example_FIL_train.m` is an example training script and `fil_label.m` provides an example of how to apply a trained model.  Note that spm12 (https://www.fil.ion.ucl.ac.uk/spm/software/spm12/) and the Multi-Brain toolbox (https://github.com/WTCN-computational-anatomy-group/mb) are required to run the code. This toolbox, along with the Multi-Brain toolbox, will be included in a future SPM release.  The template used in the paper, plus the model trained on the 15 MICCAI training subjects are available from https://figshare.com/projects/Factorisation-based_Image_Labelling/128189 .
 
 ## References
 * Böhning D. _Multinomial logistic regression algorithm_. Annals of the institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
