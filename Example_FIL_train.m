@@ -138,8 +138,17 @@ files = {Pseg,Plab};
 
 % Run the training. Takes a few days.
 nam   = 'fil30-nuNaN-v1-d4-K24-r3-sd2'; % Training filename
-sett  = struct('K',24, 'nit',5, 'nu0',NaN, 'v0',1, 'd1',4, 'nit0',4,...
-               'matname',[nam '.mat'], 'workers',8, 'verb',0, 'r',2.0, 'sd',1.5);
+sett  = struct('K',   24, ...     % Number of components per patch
+               'nit',  5, ...     % Number of alternating E-M steps per iteration
+               'nu0',NaN, ...     % Regularisation strength
+               'v0',   1, ...     % Regularisation variance
+               'd1',   4, ...     % Patch size
+               'nit0', 4, ...     % Number of outer iterations
+               'matname',[nam '.mat'], ... % Results file name
+               'workers',0, ...   % For possible parallelisation
+               'verb', 0, ...     % Verbosity
+               'r',  2.0, ...     % Radius for augmentation translations
+               'sd',1.5);         % Gaussian weighting for augmentation
 fil_train(files,sett);
 %================================================================================
 
