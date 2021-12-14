@@ -1,6 +1,6 @@
 # Factorisation-based Image Labelling
 ## Overview
-This is a scheme for training and applying the factorisation-based image labelling (FIL) framework. Some functionality from SPM12 is required for handling images (available from https://www.fil.ion.ucl.ac.uk/spm/software/spm12/). It is still work in progress, so don't expect too much from it until it has been properly debugged and refactored, as well as more extensively tested with different settings.
+This is a scheme for training and applying the factorisation-based image labelling (FIL) framework (Yan et al, 2021). Some functionality from SPM12 is required for handling images (available from https://www.fil.ion.ucl.ac.uk/spm/software/spm12/). It is still work in progress, so don't expect too much from it until it has been properly debugged and refactored, as well as more extensively tested with different settings.
 
 ## Rationale
 The approach assumes that segmented (into GM, WM and background) images have been aligned, so does not require the additional complexity of a convolutional approach.
@@ -15,11 +15,15 @@ Continuity over patches is achieved by modelling the probability of the latent v
 ## Labelling
 After training, labelling a new image is relatively fast because optimising the latent variables can be formulated within a scheme similar to a recurrent Res-Net (He et al, 2016).
 
+## Example Code
+`Example_FIL_train.m` is an example training script and `fil_label.m` provides an example of how to apply a trained model.  Note that spm12 (https://www.fil.ion.ucl.ac.uk/spm/software/spm12/) and the Multi-Brain toolbox (https://github.com/WTCN-computational-anatomy-group/mb) are required to run the code. This toolbox, along with the Multi-Brain toolbox, will be included in a future SPM release.  The template used in the paper, plus the model trained on the 15 MICCAI training subjects are available from https://figshare.com/projects/Factorisation-based_Image_Labelling/128189 .
+
 ## References
-* Böhning D. Multinomial logistic regression algorithm. Annals of the institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
+* Böhning D. _Multinomial logistic regression algorithm_. Annals of the institute of Statistical Mathematics. 1992 Mar 1;44(1):197-200.
 * Brudfors M, Balbastre Y & Ashburner J. Nonlinear Markov Random Fields Learned via Backpropagation. Accepted for 26th international conference on Information Processing in Medical Imaging (IPMI 2019). Preprint available from http://arxiv.org/abs/1902.10747 .
 * He K, Zhang X, Ren S, Sun J. _Deep residual learning for image recognition_. In Proceedings of the IEEE conference on computer vision and pattern recognition 2016 (pp. 770-778).
 * Khan ME, Bouchard G, Murphy KP, Marlin BM. _Variational bounds for mixed-data factor analysis_. In Advances in Neural Information Processing Systems 2010 (pp. 1108-1116).
+* Yan Y, Balbastre Y, Brudfors M, Ashburner J. _Factorisation-based Image Labelling_. arXiv preprint arXiv:2111.10326. 2021 Nov 19.
 * Zheng S, Jayasumana S, Romera-Paredes B, Vineet V, Su Z, Du D, Huang C, Torr PH. _Conditional random fields as recurrent neural networks_. In Proceedings of the IEEE international conference on computer vision 2015 (pp. 1529-1537).
 
 ## Acknowledgements
