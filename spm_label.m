@@ -1,14 +1,15 @@
 % Select images to label
-P       = spm_select(Inf,'nifti','Select scans to label');
+P        = spm_select(Inf,'nifti','Select scans to label');
 
 % Needs some files uploaded from:
 % https://figshare.com/projects/Factorisation-based_Image_Labelling/128189
 
-%datadir = fullfile(spm('dir'),'toolbox','mb');
-datadir = '.'; % Edit to indicate location of various files
+%datadir = fullfile(spm('dir'),'toolbox','mb'); % Suggested location for data files
+datadir  = '.'; % Edit to indicate location of various files
 
-mufile  = fullfile(datadir,'mu_X.nii'); % Head Tissue Template
-filfile = fullfile(datadir,'fil15-nuNaN-v1-d4-K24-r3-sd2.mat'); % Trained FIL Model
+mufile   = fullfile(datadir,'mu_X.nii'); % Head Tissue Template
+%filfile = fullfile(datadir,'fil15-nuNaN-v1-d4-K24-r3-sd2.mat');   % Trained FIL Model (15 training subjects)
+filfile  = fullfile(datadir,'fil30-nuNaN-v1-d4-K24-r2-sd1.5.mat'); % Trained FIL Model (15 training + 15 test subjects)
 if ~exist(mufile,'file') || ~exist(filfile) error('Can''t find the template and labelling files.'); end
 if false
     nw_priors = fullfile(datadir,'prior_X_2.mat'); % MRI Intensity Priors for T1w 

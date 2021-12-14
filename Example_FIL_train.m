@@ -137,7 +137,7 @@ Pseg  = spm_select('FPList','.','^pcat_.*\.nii$');  % Modulated and warped tissu
 files = {Pseg,Plab};
 
 % Run the training. Takes a few days.
-nam   = 'fil30-nuNaN-v1-d4-K24-r3-sd2'; % Training filename
+nam   = 'fil30-nuNaN-v1-d4-K24-r2-sd1.5'; % Training filename
 sett  = struct('K',   24, ...     % Number of components per patch
                'nit',  5, ...     % Number of alternating E-M steps per iteration
                'nu0',NaN, ...     % Regularisation strength
