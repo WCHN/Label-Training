@@ -23,7 +23,7 @@ After training, labelling a new image is relatively fast because optimising the 
 * Brudfors M, Balbastre Y & Ashburner J. Nonlinear Markov Random Fields Learned via Backpropagation. Accepted for 26th international conference on Information Processing in Medical Imaging (IPMI 2019). Preprint available from http://arxiv.org/abs/1902.10747 .
 * He K, Zhang X, Ren S, Sun J. _Deep residual learning for image recognition_. In Proceedings of the IEEE conference on computer vision and pattern recognition 2016 (pp. 770-778).
 * Khan ME, Bouchard G, Murphy KP, Marlin BM. _Variational bounds for mixed-data factor analysis_. In Advances in Neural Information Processing Systems 2010 (pp. 1108-1116).
-* Yan Y, Balbastre Y, Brudfors M, Ashburner J. _Factorisation-based Image Labelling_. arXiv preprint arXiv:2111.10326. 2021 Nov 19.
+* Yan Y, Balbastre Y, Brudfors M, Ashburner J. _Factorisation-based Image Labelling_. Frontiers in Neuroscience, 15, p.1806.
 * Zheng S, Jayasumana S, Romera-Paredes B, Vineet V, Su Z, Du D, Huang C, Torr PH. _Conditional random fields as recurrent neural networks_. In Proceedings of the IEEE international conference on computer vision 2015 (pp. 1529-1537).
 
 ## Acknowledgements
